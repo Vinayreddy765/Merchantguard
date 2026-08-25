@@ -1,0 +1,52 @@
+[
+  {
+    "sku": "starter-coffee-monthly",
+    "name": "Starter Coffee",
+    "category": "coffee_subscription",
+    "price_paise": 69900,
+    "billing_interval": "monthly",
+    "min_commitment_months": 1,
+    "max_qty_per_order": 3,
+    "active": true
+  },
+  {
+    "sku": "premium-coffee-monthly",
+    "name": "Premium Coffee",
+    "category": "coffee_subscription",
+    "price_paise": 129900,
+    "billing_interval": "monthly",
+    "min_commitment_months": 1,
+    "max_qty_per_order": 3,
+    "active": true
+  },
+  {
+    "sku": "premium-coffee-3month",
+    "name": "Premium Coffee — 3 Month",
+    "category": "coffee_subscription",
+    "price_paise": 359700,
+    "billing_interval": "quarterly",
+    "min_commitment_months": 3,
+    "max_qty_per_order": 1,
+    "active": true
+  },
+  {
+    "sku": "single-bag-coffee",
+    "name": "Single Bag — One-Time Coffee",
+    "category": "coffee_onetime",
+    "price_paise": 49900,
+    "billing_interval": null,
+    "min_commitment_months": 0,
+    "max_qty_per_order": 5,
+    "active": true
+  },
+  {
+    "sku": "gift-card-1000",
+    "name": "BrewCycle Gift Card",
+    "category": "gift_card",
+    "price_paise": 100000,
+    "billing_interval": null,
+    "min_commitment_months": 0,
+    "max_qty_per_order": 10,
+    "active": true
+  }
+]
