@@ -1,0 +1,20 @@
+{
+  "name": "merchantguard",
+  "version": "0.1.0",
+  "description": "A policy gateway for agentic commerce — sits between AI buyers and Razorpay's MCP execution layer.",
+  "type": "module",
+  "main": "api/server.js",
+  "scripts": {
+    "spike": "node mcp-integration/mcp-spike.js",
+    "start": "node api/server.js",
+    "test": "node --test test/policy-evaluator.test.js",
+    "init-db": "node db/init-db.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^11.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
