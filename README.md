@@ -1,4 +1,4 @@
-# MerchantGuard — A Policy Gateway for Agentic Commerce
+# MerchantGuard - A Policy Gateway for Agentic Commerce
 
 MerchantGuard sits between AI buyers and Razorpay's MCP execution layer,
 allowing merchants to expose commerce to AI agents while enforcing
