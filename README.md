@@ -1,4 +1,4 @@
-# MerchantGuard — A Policy Gateway for Agentic Commerce
+# MerchantGuard - A Policy Gateway for Agentic Commerce
 
 AI agents increasingly have the ability to execute payments. The
 missing merchant-side primitive is control: what may an agent buy, for
@@ -28,7 +28,7 @@ LIVE DEMO — all verified against Razorpay's real test-mode MCP server
 [`docs/mcp-integration.md`](docs/mcp-integration.md) ·
 [`docs/failure-analysis.md`](docs/failure-analysis.md)
 
-## Day 1: Prove MCP connectivity (do this first)
+## Day 1: Prove MCP connectivity 
 
 ```bash
 npm install
@@ -84,7 +84,7 @@ cp .env.example .env
 npm run spike        # proves MCP connectivity — already confirmed working
 ```
 
-## The policy: BrewCycle (fictional coffee subscription merchant)
+## The policy: BrewCycle (coffee subscription merchant)
 
 ```
 AUTO_APPROVE     amount <= ₹2,000
