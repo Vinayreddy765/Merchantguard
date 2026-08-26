@@ -1,11 +1,32 @@
-# MerchantGuard - A Policy Gateway for Agentic Commerce
+# MerchantGuard — A Policy Gateway for Agentic Commerce
 
-MerchantGuard sits between AI buyers and Razorpay's MCP execution layer,
-allowing merchants to expose commerce to AI agents while enforcing
-spending, product, subscription, velocity, and human-approval policies.
+AI agents increasingly have the ability to execute payments. The
+missing merchant-side primitive is control: what may an agent buy, for
+whom, within what limits, and under what conditions?
 
-> Razorpay MCP gives an AI agent the ability to pay.
-> MerchantGuard gives the merchant the authority to decide what that agent is allowed to do.
+MerchantGuard sits between an AI buyer and Razorpay's MCP execution
+layer. It resolves purchase intent, evaluates deterministic merchant
+policies, routes exceptions to human approval, and only forwards
+authorized actions to Razorpay.
+
+> AI proposes. Policy decides. Razorpay executes. Audit proves.
+
+```
+LIVE DEMO — all verified against Razorpay's real test-mode MCP server
+✓ Real Razorpay MCP           42 tools discovered, create_payment_link called
+✓ Test-mode payment            rzp.io/rzp/ZTUVh6p, rzp.io/rzp/z2CQFvk1
+✓ Human approval                3-Month Premium (₹3,597) → approved → executed
+✓ Policy rejection              gift card → rejected, zero MCP calls made
+✓ Velocity protection           2nd subscription/day → rejected
+✓ Price revalidation            price changed mid-flow → execution blocked
+✓ Structured audit trail        every decision logged with pass/fail checks
+```
+
+**Full documentation:**
+[`docs/architecture.md`](docs/architecture.md) ·
+[`docs/policy-model.md`](docs/policy-model.md) ·
+[`docs/mcp-integration.md`](docs/mcp-integration.md) ·
+[`docs/failure-analysis.md`](docs/failure-analysis.md)
 
 ## Day 1: Prove MCP connectivity (do this first)
 
