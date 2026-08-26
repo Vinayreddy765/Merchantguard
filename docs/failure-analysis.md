@@ -1,10 +1,10 @@
 # Failure Analysis
 
-Two real issues were found while building and testing this system —
-one found by accident during live testing (the primary "what broke"
-story), one deliberately triggered to prove a designed safety
-property. Both are documented here in full, with the actual commands
-and actual fixes. Payment link URLs and IDs shown during development
+Two real issues were found while building and testing this system -
+one found by accident during live testing , one deliberately triggered to 
+prove a designed safety property. Both are documented here in full, 
+with the actual commands and actual fixes.
+Payment link URLs and IDs shown during development
 are intentionally not reproduced verbatim in this document — they are
 Razorpay test-mode artifacts, and while harmless, there's no reason to
 publish them in a persistent, public document. Anyone can reproduce

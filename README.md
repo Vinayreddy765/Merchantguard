@@ -93,17 +93,17 @@ rationale in [`docs/policy-model.md`](docs/policy-model.md).
 
 ## Verified capabilities
 
-- ✓ Real Razorpay MCP execution — MerchantGuard currently discovers
+- Real Razorpay MCP execution — MerchantGuard currently discovers
   42 tools from Razorpay's live test-mode MCP server and has
   successfully called `create_payment_link` for real transactions
-- ✓ Deterministic policy enforcement — 9/9 tests passing across every
+- Deterministic policy enforcement — 9/9 tests passing across every
   scenario boundary (`npm test`)
-- ✓ Human-in-the-loop approval for mid-range transactions
-- ✓ Agent velocity protection (max 1 subscription action/buyer/day)
-- ✓ Execution-time price/inventory revalidation — proven with a real
+- Human-in-the-loop approval for mid-range transactions
+- Agent velocity protection (max 1 subscription action/buyer/day)
+- Execution-time price/inventory revalidation — proven with a real
   run, see engineering incidents below
-- ✓ Structured, queryable audit trail for every decision
-- ✓ Graceful MCP failure handling — failures are logged and surfaced,
+- Structured, queryable audit trail for every decision
+- Graceful MCP failure handling — failures are logged and surfaced,
   never silently swallowed or retried into a different outcome
 
 ## Engineering incidents
