@@ -1,6 +1,6 @@
 # Failure Analysis
 
-Two real issues were found while building and testing this system —
+Two real issues were found while building and testing this system -
 one deliberately triggered to prove a designed safety property, one
 found by accident during live testing. Both are documented here in
 full, with the actual commands, actual output, and actual fixes.
@@ -69,7 +69,7 @@ is the core safety property the "explainable, bounded, gated"
 requirement is asking for — proven with a real run, not asserted in
 prose.
 
-Reproduce it yourself: `node cli/demo-price-revalidation.js` — no
+Reproduce it yourself: `node cli/demo-price-revalidation.js` - no
 Razorpay credentials required, since the whole point is that execution
 never reaches Razorpay.
 
