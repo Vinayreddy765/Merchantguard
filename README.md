@@ -1,12 +1,10 @@
-# MerchantGuard — A Policy Gateway for Agentic Commerce
+# MerchantGuard  A Policy Gateway for Agentic Commerce
 
-**What:** A policy gateway for AI commerce.
-**Why:** Merchants need control over autonomous payment actions.
-**How:** AI buyer → MerchantGuard → deterministic policy → Razorpay MCP.
-**Does it work?** Yes — real Razorpay MCP, real test-mode execution.
-**What's interesting?** Human-in-the-loop approval, agent velocity limits,
-execution-time revalidation, and a fully structured audit trail.
-
+- **What:** A policy gateway for AI commerce.
+- **Why:** Merchants need control over autonomous payment actions.
+- **How:** AI buyer → MerchantGuard → deterministic policy → Razorpay MCP.
+- **Does it work?** Yes — real Razorpay MCP, real test-mode execution.
+- **What's interesting?** Human-in-the-loop approval, agent velocity limits, execution-time revalidation, and a fully structured audit trail.
 > Razorpay's MCP server gives an AI agent the ability to pay.
 > MerchantGuard gives the merchant the authority to decide what that agent is allowed to do with it.
 
