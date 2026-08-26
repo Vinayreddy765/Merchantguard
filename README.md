@@ -1,47 +1,45 @@
-# MerchantGuard - A Policy Gateway for Agentic Commerce
+# MerchantGuard — A Policy Gateway for Agentic Commerce
 
-AI agents increasingly have the ability to execute payments. The
-missing merchant-side primitive is control: what may an agent buy, for
-whom, within what limits, and under what conditions?
+**What:** A policy gateway for AI commerce.
+**Why:** Merchants need control over autonomous payment actions.
+**How:** AI buyer → MerchantGuard → deterministic policy → Razorpay MCP.
+**Does it work?** Yes — real Razorpay MCP, real test-mode execution.
+**What's interesting?** Human-in-the-loop approval, agent velocity limits,
+execution-time revalidation, and a fully structured audit trail.
 
-MerchantGuard sits between an AI buyer and Razorpay's MCP execution
-layer. It resolves purchase intent, evaluates deterministic merchant
-policies, routes exceptions to human approval, and only forwards
-authorized actions to Razorpay.
+> Razorpay's MCP server gives an AI agent the ability to pay.
+> MerchantGuard gives the merchant the authority to decide what that agent is allowed to do with it.
+
+AI agents increasingly have the ability to execute payments. Razorpay's
+own MCP server already exposes 40+ payment tools directly to any
+MCP-aware AI model. That solves *capability*. It does not solve
+*control*: what may an agent buy, for whom, within what limits, and
+under what conditions? MerchantGuard is the merchant-side control
+layer that answers that question before anything reaches Razorpay.
 
 > AI proposes. Policy decides. Razorpay executes. Audit proves.
 
-```
-LIVE DEMO — all verified against Razorpay's real test-mode MCP server
-✓ Real Razorpay MCP           42 tools discovered, create_payment_link called
-✓ Test-mode payment            rzp.io/rzp/ZTUVh6p, rzp.io/rzp/z2CQFvk1
-✓ Human approval                3-Month Premium (₹3,597) → approved → executed
-✓ Policy rejection              gift card → rejected, zero MCP calls made
-✓ Velocity protection           2nd subscription/day → rejected
-✓ Price revalidation            price changed mid-flow → execution blocked
-✓ Structured audit trail        every decision logged with pass/fail checks
-```
+## What actually happens, in one table
+
+| Scenario | Policy result | Razorpay MCP |
+|---|---|---|
+| ₹1,299 Premium Coffee | Auto-approve | ✅ Executed |
+| ₹3,597 3-Month Premium | Human approval | ✅ Executed after approval |
+| ₹10,000 Gift Card | Reject (category not allowed) | ❌ 0 calls |
+| 2nd subscription action, same buyer, same day | Reject (velocity) | ❌ 0 calls |
+| Price changed after approval, before execution | Revalidate → block | ❌ 0 calls |
+| MCP credentials missing/unreachable | Graceful failure, logged | ❌ No payment |
+
+Every row above was run for real against Razorpay's live test-mode MCP
+server — not simulated. Reproduction steps are in
+[`docs/failure-analysis.md`](docs/failure-analysis.md) and
+`cli/run-scenario.js` / `cli/demo-price-revalidation.js`.
 
 **Full documentation:**
 [`docs/architecture.md`](docs/architecture.md) ·
 [`docs/policy-model.md`](docs/policy-model.md) ·
 [`docs/mcp-integration.md`](docs/mcp-integration.md) ·
 [`docs/failure-analysis.md`](docs/failure-analysis.md)
-
-## Day 1: Prove MCP connectivity 
-
-```bash
-npm install
-cp .env.example .env
-# edit .env with your Razorpay TEST MODE keys (Dashboard > Settings > API Keys)
-npm run spike
-```
-
-If `npm run spike` prints `SPIKE PASSED`, our backend can call Razorpay's
-MCP server directly — safe to proceed with the policy engine.
-
-If it fails, read the error output — it tells you the fallback plan
-(direct REST API + documented MCP-compatibility target).
 
 ## Architecture
 
@@ -73,18 +71,11 @@ EXTERNAL AI BUYER
 +---------------------+
 ```
 
-## Setup
+Full breakdown, including why policy decisions are deterministic code
+rather than an LLM judgment call, in
+[`docs/architecture.md`](docs/architecture.md).
 
-```bash
-npm install
-npm run init-db     # creates db/merchantguard.db, seeds BrewCycle catalog + policy
-npm test            # runs the policy engine test suite (9 tests, all scenario boundaries)
-cp .env.example .env
-# edit .env with your Razorpay TEST MODE keys
-npm run spike        # proves MCP connectivity — already confirmed working
-```
-
-## The policy: BrewCycle (coffee subscription merchant)
+## The policy: BrewCycle (fictional coffee subscription merchant)
 
 ```
 AUTO_APPROVE     amount <= ₹2,000
@@ -96,68 +87,75 @@ Restricted:           gift_card
 Velocity:              max 1 subscription action / buyer / day
 ```
 
-Every decision is logged as a structured `checks[]` array (rule, expected,
-actual, pass/fail) — not a prose reason string. See `policy-engine/policy-evaluator.js`.
+Every decision is logged as a structured `checks[]` array (rule,
+expected, actual, pass/fail) — not a prose reason string. Full rule
+rationale in [`docs/policy-model.md`](docs/policy-model.md).
 
-## Status
-- [x] Repo scaffold
-- [x] MCP connectivity spike — CONFIRMED WORKING against real Razorpay MCP server
-      (42 tools discovered, `create_payment_link` called successfully, real
-      payment link returned: `plink_TSnD9Qkh06sDgJ`)
-- [x] Catalog + database (5 BrewCycle products, 1 merchant policy, SQLite)
-- [x] Policy engine core — deterministic, 9/9 tests passing across all
-      scenario boundaries (auto-approve, human-approval, reject, gift card,
-      inactive product, quantity limit)
-- [x] Catalog resolver (intent -> product matching)
-- [x] Risk gate + session/audit wiring — CONFIRMED WORKING. All three CLI
-      scenarios ran end-to-end for real:
-        - Scenario 1 (auto-approve, Premium Coffee ₹1,299) → executed,
-          real payment link created (`rzp.io/rzp/ZTUVh6p`)
-        - Scenario 2 (human-approval, 3-Month Premium ₹3,597) → routed
-          for approval, approved, executed, real payment link created
-          (`rzp.io/rzp/z2CQFvk1`)
-        - Scenario 3 (reject, gift card) → rejected on category rule,
-          zero Razorpay calls made
-- [x] Razorpay MCP execution path — real test-mode payments confirmed
-- [x] Price/inventory revalidation at execution time (see risk-gate.js)
-- [x] API server (Express) — `POST /api/intent`, `POST /api/sessions/:id/approve`,
-      `POST /api/sessions/:id/reject`, `GET /api/sessions`,
-      `GET /api/sessions/:id/audit` — all tested and working over real HTTP
-- [x] Dashboard + audit trail UI — React frontend built and verified. Three
-      panels: Chat (buyer intent), Merchant Dashboard (pending approvals),
-      Audit Trail (structured checks, receipt-ledger style). Full data flow
-      tested end-to-end via the real API (intent → pending → approve →
-      audit trail all confirmed working, including a real graceful-failure
-      render when MCP credentials are absent).
-- [x] Human approval UI — Approve/Reject buttons wired to the real endpoints
-- [ ] Failure injection scenarios + the price-revalidation bug (demo-ready)
-- [ ] Video + final README polish
+## Verified capabilities
 
-## Two candidate "what broke" stories — pick one for the video
+- ✓ Real Razorpay MCP execution — MerchantGuard currently discovers
+  42 tools from Razorpay's live test-mode MCP server and has
+  successfully called `create_payment_link` for real transactions
+- ✓ Deterministic policy enforcement — 9/9 tests passing across every
+  scenario boundary (`npm test`)
+- ✓ Human-in-the-loop approval for mid-range transactions
+- ✓ Agent velocity protection (max 1 subscription action/buyer/day)
+- ✓ Execution-time price/inventory revalidation — proven with a real
+  run, see engineering incidents below
+- ✓ Structured, queryable audit trail for every decision
+- ✓ Graceful MCP failure handling — failures are logged and surfaced,
+  never silently swallowed or retried into a different outcome
 
-Both are real, both are documented, both are reproducible. You don't need
-both in the video — pick whichever tells a better 60-90 second story.
+## Engineering incidents
 
-**Story A — the reference_id collision (found by accident, live testing)**
-See finding #3 above. Real bug, hit unexpectedly while testing the API
-from PowerShell, root-caused and fixed in minutes. Strongest as a "here's
-what actually goes wrong when you build fast" story — it's unscripted.
+Three real problems were found and fixed while building this system —
+kept here deliberately, not hidden, because they demonstrate three
+different classes of engineering failure:
 
-**Story B — the price revalidation (triggered deliberately, proves a design principle)**
-Run `node cli/demo-price-revalidation.js` to see it. This is NOT an
-accidental bug — it's a deliberate stress test of a property the system
-was designed to have from day one: a merchant changes a product's price
-while a buyer's request sits in the approval queue, and the system
-catches the mismatch and blocks execution instead of charging either the
-stale or the new price silently. Zero Razorpay calls are made. Strongest
-as a "here's the exact failure mode this architecture exists to prevent,
-and I proved it actually works" story — more aligned with the track's
-"every money action explainable, bounded and gated" bar.
+```
+Natural-language ambiguity  ->  State interpretation  ->  Distributed-system state
+```
 
-My recommendation: **lead with Story B** in the video since it directly
-demonstrates the track's core requirement, then mention Story A briefly
-as a second, real-world example of the same underlying lesson (external
-systems remember state you assumed was fresh).
+**1. Plan duration vs. price parsing.** `"...for ₹1,299/month"` was
+matching the wrong product — the word "month" in the price phrase
+collided with "3 Month" in a different SKU's name.
+
+**2. Duration vs. quantity.** `"Buy the 3-month Premium plan."` was
+extracting quantity = 3 from the "3" in "3-month," conflating plan
+duration with purchase quantity.
+
+**3. External reference collision (the real incident).** While
+repeatedly resetting the local database during testing, a live
+Razorpay call failed with:
+```
+payment link with given reference_id: mg-session-2 already exists
+```
+The local session ID had restarted at 1 after a DB reset, but
+Razorpay's remote reference state persisted independently. The initial
+assumption — that the local database was the source of truth — was
+wrong. The payment provider had state that hadn't been modeled.
+Fixed by making `reference_id` globally unique regardless of local
+resets.
+
+Full write-up of all three, including exact commands and unedited
+output, in [`docs/failure-analysis.md`](docs/failure-analysis.md).
+Incident 3 is the primary "what broke" story: unexpected, caused by a
+real external system, discovered during live integration, diagnosed,
+and fixed. The execution-time revalidation demo
+(`cli/demo-price-revalidation.js`) is kept as a second, deliberately
+triggered demonstration that the same underlying safety property
+holds architecturally, not just in this one incident.
+
+## Setup
+
+```bash
+npm install
+npm run init-db     # creates db/merchantguard.db, seeds BrewCycle catalog + policy
+npm test             # runs the policy engine test suite (9 tests, all scenario boundaries)
+cp .env.example .env
+# edit .env with your Razorpay TEST MODE keys (Dashboard > Settings > API Keys)
+npm run spike        # proves MCP connectivity
+```
 
 ## Running the full stack
 
@@ -181,57 +179,12 @@ decision render with its structured checks, approve pending items from
 the Merchant Dashboard panel, and click through to see the full audit
 trail update live.
 
-## Running the API server
+## API reference
 
-```bash
-npm install
-npm run init-db
-cp .env.example .env      # fill in Razorpay TEST mode keys
-npm run start              # starts on http://localhost:4000
 ```
-
-Endpoints:
-- `POST /api/intent` — `{ buyerId, rawIntent }` → resolves, evaluates policy,
-  auto-executes if AUTO_APPROVE
-- `POST /api/sessions/:id/approve` — merchant approves a pending session, triggers
-  revalidation + execution
-- `POST /api/sessions/:id/reject` — merchant rejects a pending session
-- `GET /api/sessions?status=pending_approval` — list sessions, optionally filtered
-- `GET /api/sessions/:id/audit` — full structured audit trail for one session
-
-## Known findings so far (candidates for the "what broke" story)
-
-While testing the catalog resolver against real demo phrases, found two
-real bugs before they could show up in the demo:
-
-1. `"...for ₹1,299/month"` was matching the wrong product (3-month plan
-   instead of monthly plan) because the word "month" appeared in both
-   the price phrase and the 3-month SKU's name. Fixed by excluding
-   generic/stopword terms from scoring and adding explicit phrase-level
-   disambiguation for plan duration.
-2. `"Buy the 3-month Premium plan."` was extracting quantity=3 from the
-   "3" in "3-month" — conflating plan duration with purchase quantity.
-   Fixed by requiring an explicit quantity unit (x, units, bags, packs,
-   qty) before treating a number as a quantity.
-3. **[Real, found via live testing, strong 2am-story candidate]**
-   `reference_id` collisions against Razorpay's remote state. Razorpay's
-   MCP server dedupes payment links by `reference_id`, and that record
-   persists on Razorpay's side *forever* — but local session IDs reset
-   to 1 every time the local DB is re-initialized (`npm run init-db`).
-   Re-running the demo after a DB reset caused `mg-session-2` to collide
-   with a reference already created on a prior run, and the real
-   Razorpay API rejected the call with `"payment link with given
-   reference_id: mg-session-2 already exists"`. Fixed by appending a
-   random suffix to `reference_id` (see `risk-gate.js`) so it stays
-   globally unique regardless of local DB state. The underlying lesson
-   is the same one behind the price-revalidation principle: **local
-   state can be "fresh" while an external system remembers more than
-   you assumed** — worth treating this as the primary 2am story instead
-   of (or alongside) the price-revalidation scenario, since it's real,
-   not staged.
-
-These are logged here as real engineering history, not manufactured for
-the pitch — worth revisiting when writing the final "2am" story to see
-if the price-revalidation scenario (from the original design doc) is
-still the most interesting one to tell, or if one of these resolver bugs
-turns out to be more illustrative once the full flow is wired up.
+POST /api/intent                    { buyerId, rawIntent } -> resolves, evaluates, auto-executes if AUTO_APPROVE
+POST /api/sessions/:id/approve      merchant approves a pending session -> revalidates -> executes
+POST /api/sessions/:id/reject       merchant rejects a pending session
+GET  /api/sessions?status=...       list sessions, optionally filtered
+GET  /api/sessions/:id/audit        full structured audit trail for one session
+```

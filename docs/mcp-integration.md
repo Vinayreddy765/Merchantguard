@@ -89,8 +89,8 @@ const toolsResult = await client.listTools();
 
 This was the first thing verified in this project, before any policy
 logic was written (`mcp-integration/mcp-spike.js`, run on day one of
-the build). That spike confirmed **42 tools** are exposed by Razorpay's
-live server, including `create_payment_link`, `create_order`,
+the build). That spike confirmed MerchantGuard currently discovers
+**42 tools** from Razorpay's live server, including `create_payment_link`, `create_order`,
 `capture_payment`, `create_registration_link`, and
 `fetch_all_payments`. MerchantGuard currently uses `create_payment_link`
 for executing approved purchases; the tool discovery step means adding
@@ -117,14 +117,17 @@ const callResult = await client.callTool({
 This was exercised for real, twice, with two different policy paths:
 
 - **AUTO_APPROVE path**: "Subscribe me to Premium Coffee for
-  ₹1,299/month" → executed immediately → real payment link
-  `rzp.io/rzp/ZTUVh6p`
+  ₹1,299/month" → executed immediately → real Razorpay test-mode
+  payment link returned
 - **HUMAN_APPROVAL path**: "Buy the 3-month Premium plan" (₹3,597) →
-  routed to merchant approval → approved → executed → real payment
-  link `rzp.io/rzp/z2CQFvk1`
+  routed to merchant approval → approved → executed → real Razorpay
+  test-mode payment link returned
 
-Both are real Razorpay test-mode payment links generated during
-development of this repo, not mocked responses.
+Both produced genuine Razorpay test-mode payment link responses during
+development of this repo, not mocked data. (Specific link URLs and IDs
+are intentionally omitted from this document — see note in
+`docs/failure-analysis.md` on why test-mode artifacts aren't published
+here.)
 
 ## What happens when MCP is unavailable
 
